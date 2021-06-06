@@ -6,6 +6,7 @@ import (
 
 	"context"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/crytome1995/BudgetReporter/pkg/aws"
 	c "github.com/crytome1995/BudgetReporter/pkg/config"
 	"github.com/crytome1995/BudgetReporter/pkg/date"
@@ -46,5 +47,5 @@ func HandleRequest(ctx context.Context, username UserNameEvent) (string, error) 
 	return fmt.Sprintf("Ran report for user %s!", username.Username), nil
 }
 func main() {
-
+	lambda.Start(HandleRequest)
 }

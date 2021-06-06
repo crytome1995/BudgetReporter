@@ -1,0 +1,28 @@
+name: Deploy Lambda
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy_zip:
+    name: deploy lambda function
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout source code
+        uses: actions/checkout@v1
+      - name: Build binary
+      - name: Zip code
+        run: |
+          cd cmd && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -a -o main main.go && zip deployment.zip main ../config.yml
+      - name: default deploy
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_DEFAULT_REGION }}
+          function_name: budget_reporter
+          zip_file: Lambda/lambda_function/deployment.zip
+          memory_size: 128
+          timeout: 35
+          handler: main
+          role: arn:aws:iam::982658172500:role/lambda_budget_scheduler_policy
+          runtime: python3.7
