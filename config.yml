@@ -1,0 +1,6 @@
+aws:
+  dynamoRegion: us-east-2
+  snsRegion: us-east-1
+  snsArn: arn:aws:sns:us-east-1:982658172500:budget_reports
+database:
+  tableName: transactions
