@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"context"
@@ -18,6 +19,13 @@ type UserNameEvent struct {
 }
 
 func reportBudget(userName string) {
+	// location timezone
+	loc, err := time.LoadLocation("America/Panama")
+	if err != nil {
+		panic(err)
+	}
+	timeUTC := time.Now()
+	timeCentral := timeUTC.In(loc)
 	// set name of config file
 	viper.SetConfigName("config")
 	// set location of config.yaml
@@ -29,17 +37,18 @@ func reportBudget(userName string) {
 	viper.SetConfigType("yml")
 	var configuration c.Configuration
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Printf("Error reading config file, %s", err)
+		log.Fatalf("Error reading config file, %s", err)
+
 	}
-	err := viper.Unmarshal(&configuration)
+	err = viper.Unmarshal(&configuration)
 	if err != nil {
-		fmt.Printf("Unable to decode into struct, %v", err)
+		log.Fatalf("Unable to decode into struct, %v", err)
 	}
-	dates := date.GenerateDateRange(time.Now())
+	dates := date.GenerateDateRange(timeCentral)
 	transactions := aws.QueryTransactionsByDate(configuration.Database.TableName, configuration.Aws.DynamoRegion, userName, dates)
-	fmt.Printf("Transactions: %v", transactions)
+	fmt.Printf("Transactions: %v\n", transactions)
 	dateSum := date.Sum(transactions)
-	aws.SendSummary(userName, fmt.Sprintf("Total spent this week $%f", dateSum), configuration.Aws.SnsRegion, configuration.Aws.SnsArn)
+	aws.SendSummary(userName, fmt.Sprintf("Total spent this week $%.2f", dateSum), configuration.Aws.SnsRegion, configuration.Aws.SnsArn)
 }
 
 func HandleRequest(ctx context.Context, username UserNameEvent) (string, error) {
