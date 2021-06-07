@@ -31,4 +31,4 @@ jobs:
           timeout: 35
           handler: main
           role: arn:aws:iam::982658172500:role/lambda_budget_reporter
-          runtime: go1.14
+          runtime: go1.x
